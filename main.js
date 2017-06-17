@@ -1,9 +1,17 @@
 //adding librarys, doing some setup stuff
 const Discord = require('discord.js');
-var token = 0;
-const client = new Discord.Client();
-const util = require('util')
 const fs = require("fs");
+
+var token = 0;
+const srvdb = "./srvdata.json"
+console.log("about to do it")
+var ns = fs.readFileSync(srvdb, "utf8")
+console.log(ns)
+console.log("half done")
+var numbers = JSON.parse(ns)
+console.log("done?")
+const client = new Discord.Client();
+const util = require('util');
 var tokenfile = require("./token.js")
 /*var tokenfile = "./token.txt"
 var readarray = fs.readFileSync(tokenfile).toString().split("\n");
@@ -56,8 +64,6 @@ http.createServer(function(request, response) {
 }).listen(80);
 
 //DISCORD PART
-
-var numbers = []
 
 //Executes when the bot is logged into Discord
 client.on('ready', () => {
@@ -133,3 +139,8 @@ client.on('message', message => {
 //Selfbot Token
 console.log(token)
 client.login(token);
+
+setInterval(function(){
+  var tobesaved = JSON.stringify(numbers, 0, 1)
+fs.writeFile(srvdb, tobesaved);
+}, 30000);
