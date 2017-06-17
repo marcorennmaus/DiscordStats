@@ -53,7 +53,7 @@ http.createServer(function(request, response) {
 	console.log("Body: " + body)*/
 
   });
-}).listen(80); // Activates this server, listening on port 8080.*/
+}).listen(80);
 
 //DISCORD PART
 
@@ -100,9 +100,30 @@ client.on('message', message => {
   //console.log(numbers[srvinarray].value)
   //console.log()
 
-  /*if (message.content === '?!ping') {
-    message.reply('?!pong');
-  }*/
+  if (message.content === 'hey marco give me a ping' && message.author.username === "marco_rennmaus | Rennmoose") {
+    message.reply('pong');
+  }
+  if (message.content === "hey marco give me a rank" && message.author.username === "marco_rennmaus | Rennmoose") {
+    var ranking = srvinarray + 1
+    var total = numbers.length + 1
+    console.log("giving rank")
+    message.channel.send(["**" + message.guild.name + "** is currently ranked on Place **" + ranking + "** of " + total])
+  }
+  if (message.content === "hey marco give me the top 5" && message.author.username === "marco_rennmaus | Rennmoose") {
+    var responselist = "Pos | Server                           | Messages\n"
+    for(i = 0;i < 5;i++){
+      //Filling up variables with some spaces
+      var posnumber = i + 1
+      var posnumber = posnumber + "   "
+      var servernames = numbers[i].name + "                                " + "."
+      //Cutting variables to fit nicely into that table
+      var servernames = servernames.substr(0, 32)
+      var posnumber = posnumber.substr(0, 3)
+
+      responselist = responselist + posnumber + " | " + servernames + " | " + numbers[i].value + "\n"
+    }
+    message.channel.send("```" + responselist + "```")
+  }
 });
 
 //Bot Token
