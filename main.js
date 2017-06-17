@@ -118,6 +118,7 @@ client.on('message', message => {
   if (message.content === "hey marco give me the top 5" && message.author.username === "marco_rennmaus | Rennmoose") {
     var responselist = "Pos | Server                           | Messages\n"
     for(i = 0;i < 5;i++){
+      var ranking = srvinarray + 1
       //Filling up variables with some spaces
       var posnumber = i + 1
       var posnumber = posnumber + "   "
@@ -127,6 +128,14 @@ client.on('message', message => {
       var posnumber = posnumber.substr(0, 3)
 
       responselist = responselist + posnumber + " | " + servernames + " | " + numbers[i].value + "\n"
+    }
+
+    if(srvinarray >= 4){
+      var servernames = message.guild.name + "                                "
+      var servernames = servernames.substr(0, 32)
+      var ranking = ranking + "   "
+      var ranking = ranking.substr(0, 3)
+      responselist = responselist + ranking + " | " + servernames + " | " + numbers[srvinarray].value + "\n"
     }
     message.channel.send("```" + responselist + "```")
   }
