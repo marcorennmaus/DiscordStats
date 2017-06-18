@@ -4,6 +4,7 @@
 var numbersauth = [];
 const Discord = require('discord.js');
 const fs = require("fs");
+var d = new Date();
 
 var token = 0;
 const srvdb = "./srvdata.json"
@@ -46,6 +47,7 @@ http.createServer(function(request, response) {
     body = Buffer.concat(body).toString();
     response.statusCode = 200;
     response.setHeader('Content-Type', 'text/plain');
+    //var responselist = "Last message took " + timetaken + "ms to process\n\n"
     var responselist = "Pos | Server                           | Messages\n"
     for(i = 0;i < numbers.length;i++){
       //Filling up variables with some spaces
@@ -91,37 +93,40 @@ client.on('ready', () => {
 });
 
 client.on('message', message => {
+  var d = new Date();
+  var stdate = d.getTime();
   //Executes when a message is recieved
   if (message.guild == null){
     //Deactivates responding and counting in PMs, would lead to Errors otherwise
     return false;
   }
   //Logging messages in console
-  console.log("[" + message.author.username + "@" + message.guild.name + "] " + message.content)
 
   //Checking if server already exists in array
   for(i = 0;i < numbers.length;i++){
     if(numbers[i].srvid === message.guild.id){
       var serverHasBeenFound = true;
       var srvinarray = i;
-      console.log("server has been found")
+      //console.log("server has been found")
     }
   }
 
   //Adds Server to array if it hasnt been found
   if (serverHasBeenFound != true){
+    console.log("Added new server to ranking list")
     console.log("Guild ID: " + message.guild.id)
+    console.log("Guild Name: " + message.guild.name)
     var srvinarray = numbers.length
     numbers[numbers.length] = {srvid: message.guild.id, name: message.guild.name, value: 0}
   }
 
   //Increases message counter
   if (numbers[srvinarray].value != "undefined"){
-    console.log("Added to a value in array")
+    //console.log("Added to a value in array")
     numbers[srvinarray].value = numbers[srvinarray].value + 1
   }
   var numbers2 = numbers.sort(function(a, b){return b.value-a.value})
-  console.log("Sorted values (probably)")
+  //console.log("Sorted values (probably)")
   //console.log(numbers2)
   //console.log(numbers[srvinarray].value)
   //console.log()
@@ -131,31 +136,40 @@ client.on('message', message => {
     if(numbersauth[i].usrid === message.author.id){
       var authorHasBeenFound = true;
       var authorinarray = i;
-      console.log("author has been found")
+      //console.log("author has been found")
     }
   }
 
   //Adds Author to array if it hasnt been found
   if (authorHasBeenFound != true){
+    console.log("Added new author to ranking list")
     console.log("Author ID: " + message.author.id)
+    console.log("Author Name: " + message.author.name)
+    console.log("Guild Name: " + message.guild.name)
     var authorinarray = numbersauth.length
     numbersauth[numbersauth.length] = {usrid: message.author.id, name: message.author.username, value: 0}
   }
-console.log("authorinarray: " + authorinarray)
+//console.log("authorinarray: " + authorinarray)
 
   //Increases message counter
   if (numbersauth[authorinarray].value != "undefined"){
-    console.log("Added to a value in array")
+    //console.log("Added to a value in array")
     numbersauth[authorinarray].value = numbersauth[authorinarray].value + 1
   }
 
   var numbersauth2 = numbersauth.sort(function(a, b){return b.value-a.value})
-  console.log("Sorted values (probably)-auth")
+//  console.log("Sorted values (probably)-auth")
 
   /*console.log("+++++ SERVER ARRAY +++++")
   console.log(numbers)
   console.log("+++++ USER ARRAY +++++")
   console.log(numbersauth)*/
+
+  var d = new Date();
+  var endate = d.getTime();
+  //console.log(endate + ":" + stdate)
+  var timetaken = endate - stdate
+  console.log("[" + timetaken + "ms][]" + srvinarray + "@" + authorinarray + "][" + message.author.username + "@" + message.guild.name + "] " + message.content)
 
   if (message.content === 'hey marco give me a ping' && message.author.username === "marco_rennmaus | Rennmoose") {
     message.reply('pong');
