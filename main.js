@@ -1,14 +1,20 @@
 //adding librarys, doing some setup stuff
+//TODO: Split everything up in multiple files
+
+var numbersauth = [];
 const Discord = require('discord.js');
 const fs = require("fs");
 
 var token = 0;
 const srvdb = "./srvdata.json"
+const authdb = "./athdata.json"
 console.log("about to do it")
+var authorn = fs.readFileSync(authdb, "utf8")
 var ns = fs.readFileSync(srvdb, "utf8")
 console.log(ns)
 console.log("half done")
 var numbers = JSON.parse(ns)
+var numbersauth = JSON.parse(authorn)
 console.log("done?")
 const client = new Discord.Client();
 const util = require('util');
@@ -51,6 +57,20 @@ http.createServer(function(request, response) {
       var posnumber = posnumber.substr(0, 3)
 
       responselist = responselist + posnumber + " | " + servernames + " | " + numbers[i].value + "\n"
+    }
+    responselist = responselist + "\n\nAuthor Data:\n"
+
+    responselist = responselist + "Pos | Author                           | Messages\n"
+    for(i = 0;i < numbersauth.length;i++){
+      //Filling up variables with some spaces
+      var posnumber = i + 1
+      var posnumber = posnumber + "   "
+      var authornames = numbersauth[i].name + "                                " + "."
+      //Cutting variables to fit nicely into that table
+      var authornames = authornames.substr(0, 32)
+      var posnumber = posnumber.substr(0, 3)
+
+      responselist = responselist + posnumber + " | " + authornames + " | " + numbersauth[i].value + "\n"
     }
     //ending response
     response.end(responselist + 'END\n');
@@ -106,6 +126,37 @@ client.on('message', message => {
   //console.log(numbers[srvinarray].value)
   //console.log()
 
+  //Checking if author already exists in array
+  for(i = 0;i < numbersauth.length;i++){
+    if(numbersauth[i].usrid === message.author.id){
+      var authorHasBeenFound = true;
+      var authorinarray = i;
+      console.log("author has been found")
+    }
+  }
+
+  //Adds Author to array if it hasnt been found
+  if (authorHasBeenFound != true){
+    console.log("Author ID: " + message.author.id)
+    var authorinarray = numbersauth.length
+    numbersauth[numbersauth.length] = {usrid: message.author.id, name: message.author.username, value: 0}
+  }
+console.log("authorinarray: " + authorinarray)
+
+  //Increases message counter
+  if (numbersauth[authorinarray].value != "undefined"){
+    console.log("Added to a value in array")
+    numbersauth[authorinarray].value = numbersauth[authorinarray].value + 1
+  }
+
+  var numbersauth2 = numbersauth.sort(function(a, b){return b.value-a.value})
+  console.log("Sorted values (probably)-auth")
+
+  /*console.log("+++++ SERVER ARRAY +++++")
+  console.log(numbers)
+  console.log("+++++ USER ARRAY +++++")
+  console.log(numbersauth)*/
+
   if (message.content === 'hey marco give me a ping' && message.author.username === "marco_rennmaus | Rennmoose") {
     message.reply('pong');
   }
@@ -139,6 +190,31 @@ client.on('message', message => {
     }
     message.channel.send("```" + responselist + "```")
   }
+
+  if (message.content === "hey marco give me the top 5 without any life" && message.author.username === "marco_rennmaus | Rennmoose") {
+    var responselist = "Pos | Author                           | Messages\n"
+    for(i = 0;i < 5;i++){
+      var ranking = authorinarray + 1
+      //Filling up variables with some spaces
+      var posnumber = i + 1
+      var posnumber = posnumber + "   "
+      var authornames = numbersauth[i].name + "                                " + "."
+      //Cutting variables to fit nicely into that table
+      var authornames = authornames.substr(0, 32)
+      var posnumber = posnumber.substr(0, 3)
+
+      responselist = responselist + posnumber + " | " + authornames + " | " + numbersauth[i].value + "\n"
+    }
+
+    if(authorinarray >= 5){
+      var authornames = message.author.name + "                                "
+      var authornames = authornames.substr(0, 32)
+      var ranking = ranking + "   "
+      var ranking = ranking.substr(0, 3)
+      responselist = responselist + ranking + " | " + authornames + " | " + numbersauth[authorinarray].value + "\n"
+    }
+    message.channel.send("```" + responselist + "```")
+  }
 });
 
 //Bot Token
@@ -152,4 +228,9 @@ client.login(token);
 setInterval(function(){
   var tobesaved = JSON.stringify(numbers, 0, 1)
 fs.writeFile(srvdb, tobesaved);
+}, 30000);
+
+setInterval(function(){
+  var tobesaved2 = JSON.stringify(numbersauth, 0, 1)
+fs.writeFile(authdb, tobesaved2);
 }, 30000);
