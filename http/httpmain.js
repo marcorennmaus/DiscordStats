@@ -1,11 +1,13 @@
 const httpcategory = require('./category.js');
 const httpversion = require("./version.js");
 const httpgeneral = require("./general.js")
+const httpregion = require("./region.js")
+const httpserverpage = require("./serverpage.js")
 
 module.exports = {
     react2response: function(request, response, vnum, numbers, numbersauth, categorydb){
       try{
-
+        console.log(request.url)
         if(request.url.startsWith("/guilds/category/")){
           httpcategory.main(request, response, numbers, numbersauth, categorydb)
           return false;
@@ -16,9 +18,17 @@ module.exports = {
           return false;
         }
 
+        if(request.url.startsWith("/guilds/")){
+          if(request.url.startsWith("/guilds/region/")){
+            httpregion.main(request, response, numbers, numbersauth, categorydb)
+            return false;
+          }
+          httpserverpage.main(request, response, numbers, numbersauth, categorydb)
+          return false;
+        }
+
         httpgeneral.main(request, response, numbers, numbersauth, categorydb)
         return false;
-      //Some logging stuff of the requests, can be used for debug
     }
     catch(err){
       response.statusCode = 500;

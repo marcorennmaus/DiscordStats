@@ -48,7 +48,7 @@ http.createServer(function(request, response) {
 	console.log("Body: " + body)
 
   });
-}).listen(81);
+}).listen(80);
 
 //DISCORD PART
 
@@ -81,9 +81,12 @@ client.on('message', message => {
     console.log("Guild ID: " + message.guild.id)
     console.log("Guild Name: " + message.guild.name)
     var srvinarray = numbers.length
-    numbers[numbers.length] = {srvid: message.guild.id, name: message.guild.name, value: 0}
+    numbers[numbers.length] = {srvid: message.guild.id, name: message.guild.name, value: 0, topic: 0, region: message.guild.region}
   }
 
+  if (numbers[srvinarray].region == null){
+    numbers[srvinarray].region = message.guild.region
+  }
   //Increases message counter
   if (numbers[srvinarray].value != "undefined"){
     numbers[srvinarray].value = numbers[srvinarray].value + 1
