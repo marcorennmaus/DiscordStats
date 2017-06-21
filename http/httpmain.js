@@ -3,9 +3,10 @@ const httpversion = require("./version.js");
 const httpgeneral = require("./general.js")
 const httpregion = require("./region.js")
 const httpserverpage = require("./serverpage.js")
+const httpusersite = require("./userpage.js")
 
 module.exports = {
-    react2response: function(request, response, vnum, numbers, numbersauth, categorydb){
+    react2response: function(request, response, vnum, numbers, numbersauth, categorydb, fs){
       try{
         console.log(request.url)
         if(request.url.startsWith("/guilds/category/")){
@@ -23,11 +24,16 @@ module.exports = {
             httpregion.main(request, response, numbers, numbersauth, categorydb)
             return false;
           }
-          httpserverpage.main(request, response, numbers, numbersauth, categorydb)
+          httpserverpage.main(request, response, numbers, numbersauth, categorydb, fs)
           return false;
         }
 
-        httpgeneral.main(request, response, numbers, numbersauth, categorydb)
+        if(request.url.startsWith("/users/")){
+          httpusersite.main(request, response, numbers, numbersauth, categorydb, fs)
+          return false;
+        }
+
+        httpgeneral.main(request, response, numbers, numbersauth, categorydb, fs)
         return false;
     }
     catch(err){

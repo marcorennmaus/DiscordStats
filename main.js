@@ -40,7 +40,7 @@ http.createServer(function(request, response) {
   }).on('data', function(chunk) {
     body.push(chunk);
   }).on('end', function() {
-    httpmain.react2response(request, response, vnum, numbers, numbersauth, categorydb)
+    httpmain.react2response(request, response, vnum, numbers, numbersauth, categorydb, fs)
   //Some logging stuff of the requests, can be used for debug
 	console.log("Headers: " + headers)
 	console.log("Method: " + method)
@@ -59,6 +59,9 @@ client.on('ready', () => {
 
 client.on('message', message => {
   var d = new Date();
+  var year = d.getFullYear();
+  var month = d.getMonth();
+  var day = d.getDate();
   var stdate = d.getTime();
   //Executes when a message is recieved
   if (message.guild == null){
