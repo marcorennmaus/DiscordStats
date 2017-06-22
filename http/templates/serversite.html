@@ -13,7 +13,11 @@
   <body>
     <center>
     <h1><a href="/"> DiscordStats</a></h1>
-    <h2>var_srvname</h2>
+    <script src="/files/Chart.js"></script>
+    <div>
+      <img src="var_servericon" alt="DiscordAvatar" height="128" width="128">
+    </div>
+    <div><h2>var_srvname</h2></div>
     <p>Messages: var_msgtotal</p>
     <style type="text/css">
     .tg  {border-collapse:collapse;border-spacing:0;}
@@ -43,6 +47,102 @@
         <td class="tg-baqh">var_regrank</td>
       </tr>
     </table>
+    <div style="position: relative; height:300px; width:600px">
+    <canvas id="myChart"></canvas>
+  </div>
+  <div style="position: relative; height:300px; width:600px">
+  <canvas id="myChart2"></canvas>
+</div>
+<div style="position: relative; height:300px; width:600px">
+<canvas id="myChart3"></canvas>
+</div>
+    <script>
+    var ctx = document.getElementById("myChart");
+    var myChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: [var_labelnames],
+        datasets: [{
+            label: 'Total Messages',
+            data: [var_datavalues],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.2)'
+            ],
+            borderColor: [
+                'rgba(255,99,132,1)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero:true
+                }
+            }]
+        }
+    }
+});
+    </script>
+    <script>
+    var ctx2 = document.getElementById("myChart2");
+    var myChart2 = new Chart(ctx2, {
+    type: 'line',
+    data: {
+        labels: [var_labelnames],
+        datasets: [{
+            label: 'Daily Messages',
+            data: [var_datavalue2],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.2)'
+            ],
+            borderColor: [
+                'rgba(255,99,132,1)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero:true
+                }
+            }]
+        }
+    }
+});
+    </script>
+    <script>
+    var ctx3 = document.getElementById("myChart3");
+    var myChart3 = new Chart(ctx3, {
+    type: 'line',
+    data: {
+        labels: [var_labelnames],
+        datasets: [{
+            label: 'Rank',
+            data: [var_datavalue3],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.2)'
+            ],
+            borderColor: [
+                'rgba(255,99,132,1)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero:true
+                }
+            }]
+        }
+    }
+});
+    </script>
   </center>
   </body>
 </html>

@@ -6,11 +6,18 @@ const httpserverpage = require("./serverpage.js")
 const httpusersite = require("./userpage.js")
 
 module.exports = {
-    react2response: function(request, response, vnum, numbers, numbersauth, categorydb, fs){
+    react2response: function(request, response, vnum, numbers, numbersauth, categorydb, fs, chartjs, mysql, mysqlcon){
       try{
         console.log(request.url)
         if(request.url.startsWith("/guilds/category/")){
           httpcategory.main(request, response, numbers, numbersauth, categorydb)
+          return false;
+        }
+
+        if(request.url.startsWith("/files/Chart.js")){
+          response.statusCode = 200;
+          response.setHeader('Content-Type', 'text/plain');
+          response.end(chartjs)
           return false;
         }
 
@@ -24,7 +31,7 @@ module.exports = {
             httpregion.main(request, response, numbers, numbersauth, categorydb)
             return false;
           }
-          httpserverpage.main(request, response, numbers, numbersauth, categorydb, fs)
+          httpserverpage.main(request, response, numbers, numbersauth, categorydb, fs, mysql, mysqlcon)
           return false;
         }
 

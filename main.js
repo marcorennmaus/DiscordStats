@@ -10,6 +10,7 @@ const http = require('http');
 const client = new Discord.Client();
 const httpmain = require("./http/httpmain.js")
 const util = require('util');
+const mysql = require("mysql");
 
 const discordcmds = require("./discord/cmdsmain.js")
 const cat = "./categories.json"
@@ -23,13 +24,35 @@ var numbers = JSON.parse(ns)
 var numbersauth = JSON.parse(authorn)
 var categorydb = JSON.parse(catdb)
 var tokenfile = require("./token.js")
+var mysqldata = require("./mysqllogin.js");
+var mysqlhost = mysqldata.hostname()
+var mysqluser = mysqldata.useracc()
+var mysqlpass = mysqldata.passwrd()
+var sqlsrvdailycount = 3
+var chartjsfile = "./node_modules/chart.js/dist/Chart.js"
 
+var mysqlcon = mysql.createConnection({
+  host: mysqlhost,
+  user: mysqluser,
+  password: mysqlpass,
+  database: "discordstats"
+});
+
+/*mysqlcon.connect(function(err) {
+  if (err) throw err;
+  console.log("Connected!");
+  mysqlcon.query("CREATE DATABASE discordstats", function (err, result) {
+    if (err) throw err;
+    console.log("Database created");
+    console.log(result)
+  });
+});*/
 
 //HTTP SERVER
 
 
 http.createServer(function(request, response) {
-
+  var chartjs = fs.readFileSync(chartjsfile, "utf8")
   var headers = request.headers;
   var method = request.method;
   var url = request.url;
@@ -40,7 +63,7 @@ http.createServer(function(request, response) {
   }).on('data', function(chunk) {
     body.push(chunk);
   }).on('end', function() {
-    httpmain.react2response(request, response, vnum, numbers, numbersauth, categorydb, fs)
+    httpmain.react2response(request, response, vnum, numbers, numbersauth, categorydb, fs, chartjs, mysql, mysqlcon)
   //Some logging stuff of the requests, can be used for debug
 	console.log("Headers: " + headers)
 	console.log("Method: " + method)
@@ -51,6 +74,22 @@ http.createServer(function(request, response) {
 }).listen(80);
 
 //DISCORD PART
+console.log("with everything")
+mysqlcon.connect(function(err) {
+  if (err) throw err;
+  console.log("Connected!");
+  mysqlcon.query("SELECT * FROM discordstats.guild_204611492010524672;", function (err, result){
+    if (err) throw err;
+    console.log("Result: " + result);
+  });
+});
+
+console.log("without con.connect")
+  mysqlcon.query("SELECT * FROM discordstats.guild_204611492010524672;", function (err, result){
+    if (err) throw err;
+    console.log("Result: " + result);
+  });
+
 
 //Executes when the bot is logged into Discord
 client.on('ready', () => {
@@ -68,6 +107,8 @@ client.on('message', message => {
     //Deactivates responding and counting in PMs, would lead to Errors otherwise
     return false;
   }
+
+
   //Logging messages in console
 
   //Checking if server already exists in array
@@ -90,11 +131,96 @@ client.on('message', message => {
   if (numbers[srvinarray].region == null){
     numbers[srvinarray].region = message.guild.region
   }
+
+  if (numbers[srvinarray].icon == null){
+    //console.log("Added to a value in array")
+    numbers[srvinarray].icon = message.guild.iconURL
+  }
+
   //Increases message counter
   if (numbers[srvinarray].value != "undefined"){
     numbers[srvinarray].value = numbers[srvinarray].value + 1
   }
   var numbers2 = numbers.sort(function(a, b){return b.value-a.value})
+
+  console.log("checking if table exists")
+  //try{
+    mysqlcon.query("CREATE TABLE IF NOT EXISTS guild_" + message.guild.id + "(Date varchar(10), TotalCount int, DailyCount int, Rank int);", function (err, result2) {
+    if(err){throw err}
+    console.log("inside")
+    console.log("Result:");
+    console.log(result2)
+  });
+/*}
+catch(err){
+  if (err) {
+    console.log(err)
+    console.log("creating table")
+      mysqlcon.query("CREATE TABLE guild_" + message.guild.id + "(Date varchar(10), TotalCount int, DailyCount int, Rank int);"), function (err, result) {
+        console.log("Result:");
+        console.log(result)
+        return false;
+  }
+}*/
+
+  var d = new Date;
+
+  var dateyear = d.getFullYear()
+  var datemonth = d.getMonth() + 1
+  var datedate = d.getDate()
+
+  if (datemonth < 10){
+    var datemonth = "0" + datemonth
+  }
+
+  var updatevalues = function(sqlsrvdailycount){
+    var rankcurrently = srvinarray + 1
+  mysqlcon.query("UPDATE guild_" + message.guild.id + " SET TotalCount=" + numbers[srvinarray].value + ", DailyCount=" + sqlsrvdailycount + ", Rank=" + rankcurrently + " WHERE Date = '" + dateyear + "-" + datemonth + "-" + datedate + "' ;", function (err, result) {
+    if (err) {
+          console.log("Error:");
+          console.log(err)
+          return false;
+    }
+    console.log("UPDATE: " + message.guild.id + ";" + numbers[srvinarray].value + ";" + sqlsrvdailycount + ";" + srvinarray)
+    console.log("Result:");
+    console.log(result)
+  });
+}
+
+
+  console.log("second step")
+  console.log(dateyear + "-" + datemonth + "-" + datedate)
+  mysqlcon.query("SELECT * FROM guild_" + message.guild.id + " WHERE Date = '" + dateyear + "-" + datemonth + "-" + datedate + "';", function(err, result){
+
+    if(result[0] == null) {
+      console.log("Error in select area:")
+      console.log(err)
+      mysqlcon.query("INSERT INTO `guild_" + message.guild.id + "` (Date, TotalCount, DailyCount, Rank) VALUES ('" + dateyear + "-" + datemonth + "-" + datedate + "', " + numbers[srvinarray].value + ", 0, " + srvinarray + ");", function (err, result, fields) {
+        console.log("insert prompt")
+        if (err) {
+              console.log("Error in insert area:");
+              console.log(err)
+              return false;
+        }
+        console.log("Result:");
+        console.log(result)
+        var sqlsrvdailycount = 0
+        updatevalues()
+      });
+    }
+    else{
+    console.log("Result:")
+    console.log(result)
+    var test = 0
+    if(result === "[]") {var test = 1}
+    console.log(test)
+    console.log("result[0].dailycount:")
+    console.log(result[0].DailyCount)
+    var sqlsrvdailycount = result[0].DailyCount + 1
+    updatevalues(sqlsrvdailycount)
+  }
+
+  });
 
   //Checking if author already exists in array
   for(i = 0;i < numbersauth.length;i++){
@@ -119,6 +245,12 @@ client.on('message', message => {
   if (numbersauth[authorinarray].value != "undefined"){
     //console.log("Added to a value in array")
     numbersauth[authorinarray].value = numbersauth[authorinarray].value + 1
+  }
+
+  if (numbersauth[authorinarray].avatar == null){
+    //console.log("Added to a value in array")
+    numbersauth[authorinarray].avatar = message.author.avatarURL
+    console.log(message.author.avatarURL)
   }
 
   var numbersauth2 = numbersauth.sort(function(a, b){return b.value-a.value})
