@@ -28,8 +28,8 @@ module.exports = {
             var tablerow2 = tablerow2.replace(/var_usericon/gi, function thingrankreplace(x){return numbers[search].icon;});
             var tablerow2 = tablerow2.replace(/var_name/gi, function thingidreplace(x){return numbers[search].name;});
             var tablerow2 = tablerow2.replace(/var_id/gi, function thingidreplace(x){return numbers[search].id;});
-            var tablerow2 = tablerow2.replace(/var_thingname/gi, function thingidreplace(x){return "guilds";});
-            var tablerow2 = tablerow2.replace(/var_thingid/gi, function thingidreplace(x){return numbers[search].id;});
+            var tablerow2 = tablerow2.replace(/var_thingtype/gi, function thingidreplace(x){return "guilds";});
+            var tablerow2 = tablerow2.replace(/var_thingid/gi, function thingidreplace(x){return numbers[search].srvid;});
             var srvlistcontinued = srvlistcontinued + tablerow2
           }
         }
@@ -44,11 +44,12 @@ module.exports = {
         for(l = 0;l < resultsauth.length;l++){
             var tablerow2 = tablerow
             var search = resultsauth[l]
+            console.log("SearchID: " + resultsauth[l])
             var tablerow2 = tablerow2.replace(/var_usericon/gi, function thingrankreplace(x){return numbersauth[search].avatar;});
             var tablerow2 = tablerow2.replace(/var_name/gi, function thingidreplace(x){return numbersauth[search].name;});
             var tablerow2 = tablerow2.replace(/var_id/gi, function thingidreplace(x){return numbersauth[search].id;});
-            var tablerow2 = tablerow2.replace(/var_thingname/gi, function thingidreplace(x){return "users";});
-            var tablerow2 = tablerow2.replace(/var_thingid/gi, function thingidreplace(x){return numbersauth[search].id;});
+            var tablerow2 = tablerow2.replace(/var_thingtype/gi, function thingidreplace(x){return "users";});
+            var tablerow2 = tablerow2.replace(/var_thingid/gi, function thingidreplace(x){return numbersauth[search].usrid;});
             var athlistcontinued = athlistcontinued + tablerow2
           }
         if(results.length > 0){
