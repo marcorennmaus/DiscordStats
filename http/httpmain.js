@@ -4,9 +4,10 @@ const httpgeneral = require("./general.js")
 const httpregion = require("./region.js")
 const httpserverpage = require("./serverpage.js")
 const httpusersite = require("./userpage.js")
+const httpsearch = require("./search.js")
 
 module.exports = {
-    react2response: function(request, response, vnum, numbers, numbersauth, categorydb, fs, chartjs, mysql, mysqlcon){
+    react2response: function(request, response, vnum, numbers, numbersauth, categorydb, fs, chartjs, mysql, mysqlcon, timetakenavgarray, timetakentimerarray, messagesduringperiodarray, timetakenmysqlavgarray){
       try{
         console.log(request.url)
         if(request.url.startsWith("/guilds/category/")){
@@ -21,8 +22,22 @@ module.exports = {
           return false;
         }
 
-        if(request.url.startsWith("/version")){
-          httpversion.main(request, response, vnum)
+        if(request.url.startsWith("/leagues")){
+          var leaguefile = "./http/templates/championship.html"
+          response.statusCode = 200;
+          response.setHeader('Content-Type', 'text/html');
+          var leaderboardleagues = fs.readFileSync(leaguefile, "utf8")
+          response.end(leaderboardleagues)
+          return false;
+        }
+
+        if(request.url.startsWith("/search")){
+          httpsearch.main(request, response, numbers, numbersauth, categorydb, fs)
+          return false;
+        }
+
+        if(request.url.startsWith("/status")){
+          httpversion.main(request, response, vnum, timetakenavgarray, timetakentimerarray, fs, messagesduringperiodarray, timetakenmysqlavgarray)
           return false;
         }
 
@@ -36,7 +51,7 @@ module.exports = {
         }
 
         if(request.url.startsWith("/users/")){
-          httpusersite.main(request, response, numbers, numbersauth, categorydb, fs)
+          httpusersite.main(request, response, numbers, numbersauth, categorydb, fs, mysql, mysqlcon)
           return false;
         }
 

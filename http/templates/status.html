@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <title>Status | DiscordStats</title>
+    <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+    }
+    #notice {
+      background-color: #f2dfae;
+    }
+  </style>
+  </head>
+  <body>
+    <center>
+      <div id=notice>
+      <b>Duplicating Usernames</b><br>
+
+        A bug caused several usernames to be overwritten. Bug should be fixed now.
+      </div>
+</div>
+    <h1><a href="/"> DiscordStats</a></h1>
+    <script src="/files/Chart.js"></script>
+    <div><h2>Status</h2></div>
+    <p><b>Message Processing Time</b>
+    <p>MPT is the amount of time that was taken while processing a message.
+      <br>The measured timeperiod starts when discord.js emits the message event and ends before the command checks begin.
+    <div style="position: relative; height:300px; width:600px">
+    <canvas id="myChart"></canvas></div>
+    <p><b>Messages during Timeframe</b>
+    <p>If there are no messages sent, it can mean that Discord is having a issue.</p>
+    <div style="position: relative; height:300px; width:600px">
+    <canvas id="myChart2"></canvas></div>
+    <script>
+    var ctx = document.getElementById("myChart");
+    var myChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: [var_timerlabels],
+        datasets: [{
+            label: 'Message Processing',
+            data: [var_timevalues],
+            radius: 0.5,
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.2)'
+            ],
+            borderColor: [
+                'rgba(255,99,132,1)'
+            ],
+            borderWidth: 1
+        },
+        {
+            label: 'MySQL',
+            data: [var_mysqltimervalues],
+            radius: 0.5,
+            backgroundColor: [
+                'rgba(104, 152, 204, 0.2)'
+            ],
+            borderColor: [
+                'rgba(104,152,204,1)'
+            ],
+            borderWidth: 1
+        }
+      ]
+    },
+    options: {
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero:true
+                }
+            }]
+        }
+    }
+});
+    </script>
+
+    <script>
+    var ctx2 = document.getElementById("myChart2");
+    var myChart2 = new Chart(ctx2, {
+    type: 'line',
+    data: {
+        labels: [var_timerlabels],
+        datasets: [{
+            label: 'Messages',
+            data: [var_messagevalues],
+            radius: 0.5,
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.2)'
+            ],
+            borderColor: [
+                'rgba(255,99,132,1)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero:true
+                }
+            }]
+        }
+    }
+});
+    </script>
+  </center>
+  </body>
+</html>

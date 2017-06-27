@@ -4,3 +4,4 @@ srvdata.json
 athdata.json
 srvdata2.json
 mysqllogin.js
+http/templates/championship.html

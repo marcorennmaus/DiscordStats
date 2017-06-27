@@ -2,8 +2,10 @@
 //TODO: Split everything up in multiple files
 
 var d = new Date();
-var vnum = "0.5"
-var numbersauth = [];
+var vnum = "0.6-beta"
+var builddate = "26-06-2017"
+
+console.log("Starting up DiscordStats, Version: " + vnum + " (" + builddate + ")")
 const Discord = require('discord.js');
 const fs = require("fs");
 const http = require('http');
@@ -12,6 +14,7 @@ const httpmain = require("./http/httpmain.js")
 const util = require('util');
 const mysql = require("mysql");
 
+var numbersauth = [];
 const discordcmds = require("./discord/cmdsmain.js")
 const cat = "./categories.json"
 const srvdb = "./srvdata2.json"
@@ -30,6 +33,13 @@ var mysqluser = mysqldata.useracc()
 var mysqlpass = mysqldata.passwrd()
 var sqlsrvdailycount = 3
 var chartjsfile = "./node_modules/chart.js/dist/Chart.js"
+var timetakenarray = []
+var timetakenavgarray = []
+var timetakenmysqlavgarray = []
+var timetakenmysqlarray = []
+var timetakentimerarray = []
+var messagesduringperiod = 0
+var messagesduringperiodarray = []
 
 var mysqlcon = mysql.createConnection({
   host: mysqlhost,
@@ -37,19 +47,6 @@ var mysqlcon = mysql.createConnection({
   password: mysqlpass,
   database: "discordstats"
 });
-
-/*mysqlcon.connect(function(err) {
-  if (err) throw err;
-  console.log("Connected!");
-  mysqlcon.query("CREATE DATABASE discordstats", function (err, result) {
-    if (err) throw err;
-    console.log("Database created");
-    console.log(result)
-  });
-});*/
-
-//HTTP SERVER
-
 
 http.createServer(function(request, response) {
   var chartjs = fs.readFileSync(chartjsfile, "utf8")
@@ -63,7 +60,7 @@ http.createServer(function(request, response) {
   }).on('data', function(chunk) {
     body.push(chunk);
   }).on('end', function() {
-    httpmain.react2response(request, response, vnum, numbers, numbersauth, categorydb, fs, chartjs, mysql, mysqlcon)
+    httpmain.react2response(request, response, vnum, numbers, numbersauth, categorydb, fs, chartjs, mysql, mysqlcon, timetakenavgarray, timetakentimerarray, messagesduringperiodarray, timetakenmysqlavgarray)
   //Some logging stuff of the requests, can be used for debug
 	console.log("Headers: " + headers)
 	console.log("Method: " + method)
@@ -74,22 +71,6 @@ http.createServer(function(request, response) {
 }).listen(80);
 
 //DISCORD PART
-console.log("with everything")
-mysqlcon.connect(function(err) {
-  if (err) throw err;
-  console.log("Connected!");
-  mysqlcon.query("SELECT * FROM discordstats.guild_204611492010524672;", function (err, result){
-    if (err) throw err;
-    console.log("Result: " + result);
-  });
-});
-
-console.log("without con.connect")
-  mysqlcon.query("SELECT * FROM discordstats.guild_204611492010524672;", function (err, result){
-    if (err) throw err;
-    console.log("Result: " + result);
-  });
-
 
 //Executes when the bot is logged into Discord
 client.on('ready', () => {
@@ -105,6 +86,10 @@ client.on('message', message => {
   //Executes when a message is recieved
   if (message.guild == null){
     //Deactivates responding and counting in PMs, would lead to Errors otherwise
+    return false;
+  }
+  if (message.guild.id == "327962579815366676"){
+    //Deactivates responding and counting somewhere | DO NOT DELETE
     return false;
   }
 
@@ -137,31 +122,32 @@ client.on('message', message => {
     numbers[srvinarray].icon = message.guild.iconURL
   }
 
+  if (numbers[srvinarray].ownerid == null){
+    numbers[srvinarray].ownerid = message.guild.ownerid
+  }
+
   //Increases message counter
   if (numbers[srvinarray].value != "undefined"){
     numbers[srvinarray].value = numbers[srvinarray].value + 1
   }
+
+  if(numbers[srvinarray].name != message.guild.name){
+    numbers[srvinarray].name = message.guild.name
+  }
+  if(numbers[srvinarray].region != message.guild.region){
+    numbers[srvinarray].region = message.guild.region
+  }
+  if(numbers[srvinarray].name != message.guild.name){
+    numbers[srvinarray].name = message.guild.name
+  }
+
   var numbers2 = numbers.sort(function(a, b){return b.value-a.value})
 
   console.log("checking if table exists")
   //try{
     mysqlcon.query("CREATE TABLE IF NOT EXISTS guild_" + message.guild.id + "(Date varchar(10), TotalCount int, DailyCount int, Rank int);", function (err, result2) {
     if(err){throw err}
-    console.log("inside")
-    console.log("Result:");
-    console.log(result2)
   });
-/*}
-catch(err){
-  if (err) {
-    console.log(err)
-    console.log("creating table")
-      mysqlcon.query("CREATE TABLE guild_" + message.guild.id + "(Date varchar(10), TotalCount int, DailyCount int, Rank int);"), function (err, result) {
-        console.log("Result:");
-        console.log(result)
-        return false;
-  }
-}*/
 
   var d = new Date;
 
@@ -175,26 +161,21 @@ catch(err){
 
   var updatevalues = function(sqlsrvdailycount){
     var rankcurrently = srvinarray + 1
-  mysqlcon.query("UPDATE guild_" + message.guild.id + " SET TotalCount=" + numbers[srvinarray].value + ", DailyCount=" + sqlsrvdailycount + ", Rank=" + rankcurrently + " WHERE Date = '" + dateyear + "-" + datemonth + "-" + datedate + "' ;", function (err, result) {
+    console.log("UPDATE guild_" + message.guild.id + " SET TotalCount=" + numbers[srvinarray].value + ", DailyCount=" + sqlsrvdailycount + ", Rank=" + rankcurrently + " WHERE Date = '" + dateyear + "-" + datemonth + "-" + datedate + "' ;")
+    mysqlcon.query("UPDATE guild_" + message.guild.id + " SET TotalCount=" + numbers[srvinarray].value + ", DailyCount=" + sqlsrvdailycount + ", Rank=" + rankcurrently + " WHERE Date = '" + dateyear + "-" + datemonth + "-" + datedate + "' ;", function (err, result) {
     if (err) {
-          console.log("Error:");
+          console.log("Error in update:");
           console.log(err)
           return false;
     }
-    console.log("UPDATE: " + message.guild.id + ";" + numbers[srvinarray].value + ";" + sqlsrvdailycount + ";" + srvinarray)
-    console.log("Result:");
-    console.log(result)
   });
 }
 
-
-  console.log("second step")
-  console.log(dateyear + "-" + datemonth + "-" + datedate)
+  console.log("SELECT * FROM guild_" + message.guild.id + " WHERE Date = '" + dateyear + "-" + datemonth + "-" + datedate + "';")
   mysqlcon.query("SELECT * FROM guild_" + message.guild.id + " WHERE Date = '" + dateyear + "-" + datemonth + "-" + datedate + "';", function(err, result){
 
     if(result[0] == null) {
-      console.log("Error in select area:")
-      console.log(err)
+      console.log("INSERT INTO `guild_" + message.guild.id + "` (Date, TotalCount, DailyCount, Rank) VALUES ('" + dateyear + "-" + datemonth + "-" + datedate + "', " + numbers[srvinarray].value + ", 0, " + srvinarray + ");")
       mysqlcon.query("INSERT INTO `guild_" + message.guild.id + "` (Date, TotalCount, DailyCount, Rank) VALUES ('" + dateyear + "-" + datemonth + "-" + datedate + "', " + numbers[srvinarray].value + ", 0, " + srvinarray + ");", function (err, result, fields) {
         console.log("insert prompt")
         if (err) {
@@ -202,25 +183,17 @@ catch(err){
               console.log(err)
               return false;
         }
-        console.log("Result:");
-        console.log(result)
         var sqlsrvdailycount = 0
-        updatevalues()
+        updatevalues(sqlsrvdailycount)
       });
     }
     else{
-    console.log("Result:")
-    console.log(result)
-    var test = 0
-    if(result === "[]") {var test = 1}
-    console.log(test)
-    console.log("result[0].dailycount:")
-    console.log(result[0].DailyCount)
     var sqlsrvdailycount = result[0].DailyCount + 1
     updatevalues(sqlsrvdailycount)
   }
-
   });
+
+  var numbers2 = numbers.sort(function(a, b){return b.value-a.value})
 
   //Checking if author already exists in array
   for(i = 0;i < numbersauth.length;i++){
@@ -253,13 +226,77 @@ catch(err){
     console.log(message.author.avatarURL)
   }
 
-  var numbersauth2 = numbersauth.sort(function(a, b){return b.value-a.value})
-//  console.log("Sorted values (probably)-auth")
 
-  /*console.log("+++++ SERVER ARRAY +++++")
-  console.log(numbers)
-  console.log("+++++ USER ARRAY +++++")
-  console.log(numbersauth)*/
+  console.log("checking if table exists")
+  //try{
+    console.log("CREATE TABLE IF NOT EXISTS author_" + message.author.id + "(Date varchar(10), TotalCount int, DailyCount int, Rank int);")
+    mysqlcon.query("CREATE TABLE IF NOT EXISTS author_" + message.author.id + "(Date varchar(10), TotalCount int, DailyCount int, Rank int);", function (err, result2) {
+    if(err){throw err}
+  });
+
+  var d = new Date;
+
+  var dateyear = d.getFullYear()
+  var datemonth = d.getMonth() + 1
+  var datedate = d.getDate()
+
+  if (datemonth < 10){
+    var datemonth = "0" + datemonth
+  }
+
+
+    var updatevalues2 = function(sqlathdailycount){
+      var rankcurrently = authorinarray + 1
+      console.log("UPDATE author_" + message.author.id + " SET TotalCount=" + numbersauth[authorinarray].value + ", DailyCount=" + sqlathdailycount + ", Rank=" + rankcurrently + " WHERE Date = '" + dateyear + "-" + datemonth + "-" + datedate + "' ;")
+    mysqlcon.query("UPDATE author_" + message.author.id + " SET TotalCount=" + numbersauth[authorinarray].value + ", DailyCount=" + sqlathdailycount + ", Rank=" + rankcurrently + " WHERE Date = '" + dateyear + "-" + datemonth + "-" + datedate + "' ;", function (err, result) {
+      if (err) {
+            console.log("Error:");
+            console.log(err)
+            return false;
+      }
+    });
+    var d = new Date();
+    var endate2 = d.getTime();
+    //console.log(endate + ":" + stdate)
+    var timetakenms = endate2 - stdate
+    timetakenmysqlarray[timetakenmysqlarray.length] = timetakenms
+    console.log(timetakenmysqlarray)
+  }
+
+  console.log("SELECT * FROM author_" + message.author.id + " WHERE Date = '" + dateyear + "-" + datemonth + "-" + datedate + "';")
+  mysqlcon.query("SELECT * FROM author_" + message.author.id + " WHERE Date = '" + dateyear + "-" + datemonth + "-" + datedate + "';", function(err, result){
+
+    if(result[0] == null) {
+      console.log("INSERT INTO `author_" + message.author.id + "` (Date, TotalCount, DailyCount, Rank) VALUES ('" + dateyear + "-" + datemonth + "-" + datedate + "', " + numbersauth[authorinarray].value + ", 0, " + authorinarray + ");")
+      mysqlcon.query("INSERT INTO `author_" + message.author.id + "` (Date, TotalCount, DailyCount, Rank) VALUES ('" + dateyear + "-" + datemonth + "-" + datedate + "', " + numbersauth[authorinarray].value + ", 0, " + authorinarray + ");", function (err, result, fields) {
+        console.log("insert prompt")
+        if (err) {
+              console.log("Error in insert area:");
+              console.log(err)
+              return false;
+        }
+        var sqlathdailycount = 0
+        updatevalues2(sqlathdailycount)
+      });
+    }
+    else{
+    var sqlathdailycount = result[0].DailyCount + 1
+    updatevalues2(sqlathdailycount)
+  }
+
+  });
+
+//Updates outdated values
+
+  if(numbersauth[authorinarray].avatar != message.author.avatarURL){
+    numbersauth[authorinarray].avatar = message.author.avatarURL
+  }
+  if(numbersauth[authorinarray].name != message.author.username){
+    numbersauth[authorinarray].name = message.author.username
+  }
+
+
+  var numbersauth2 = numbersauth.sort(function(a, b){return b.value-a.value})
 
   var d = new Date();
   var endate = d.getTime();
@@ -268,7 +305,9 @@ catch(err){
   console.log("[" + timetaken + "ms][]" + srvinarray + "@" + authorinarray + "][" + message.author.username + "@" + message.guild.name + "] " + message.content)
 
   discordcmds.react2message(message, numbers, numbersauth, categorydb, srvinarray, authorinarray)
-
+  timetakenarray[timetakenarray.length] = timetaken
+  console.log(timetakenarray)
+  messagesduringperiod++
 });
 
 
@@ -276,6 +315,45 @@ catch(err){
 var token = tokenfile.gettoken()
 console.log(token)
 client.login(token);
+
+setInterval(function(){
+  var d = new Date();
+  var hour = d.getHours()
+  var minutes = d.getMinutes()
+  var seconds = d.getSeconds()
+
+  var total = 0;
+  var total2 = 0;
+  for(var i = 0; i < timetakenarray.length; i++) {
+      total += timetakenarray[i];
+  }
+  var average = total / timetakenarray.length;
+  var average = Math.round(average);
+
+  for(var i = 0; i < timetakenmysqlarray.length; i++) {
+      total2 += timetakenmysqlarray[i];
+  }
+  var average2 = total2 / timetakenmysqlarray.length;
+  var average2 = Math.round(average2);
+
+  if(timetakenavgarray.length >= 180){
+    timetakenavgarray.shift()
+    timetakentimerarray.shift()
+    messagesduringperiodarray.shift()
+    timetakenmysqlavgarray.shift()
+  }
+  timetakenavgarray[timetakenavgarray.length] = average
+  timetakenmysqlavgarray[timetakenmysqlavgarray.length] = average2
+  var datestring = '"' + hour + ":" + minutes + ':' + seconds + '"'
+  timetakentimerarray[timetakentimerarray.length] = datestring
+  messagesduringperiodarray[messagesduringperiodarray.length] = messagesduringperiod
+  timetakenarray = []
+  timetakenmysqlarray = []
+  messagesduringperiod = 0
+
+  console.log(timetakenavgarray)
+  console.log(timetakenmysqlavgarray)
+}, 10000);
 
 setInterval(function(){
   var tobesaved = JSON.stringify(numbers, 0, 1)

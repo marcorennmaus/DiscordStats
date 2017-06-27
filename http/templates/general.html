@@ -11,21 +11,41 @@
         #notice {
           background-color: #f2dfae;
         }
-
       </style>
     </head>
     <body>
       <center>
-        <div id="notice">
+        <div id=notice>
+        <b>Duplicating Usernames</b><br>
+
+          A bug caused several usernames to be overwritten. Bug should be fixed now.
         </div>
       <h1><a href="/"> DiscordStats</a></h1>
-      <p><a href="/guilds/region/">Region Selection</a></p>
-      <p><a href="/guilds/category/">Category Selection</a></p>
+      <label for="searches">
+        <input id="1" name="searches" placeholder="Search">
+      </label>
+      <input id="button" type="submit">
+      <script>
+
+      document.getElementById('button').onclick = function() {
+      var start = true
+      var searchprompt = document.getElementById("1").value
+      console.log(searchprompt)
+      var url = "http://marcorennmaus.tk/search/" + searchprompt
+      location.href = "http://marcorennmaus.tk/search/" + searchprompt;
+}
+</script>
+
+      <p><a href="/guilds/region/">Region Selection (Coming in v0.7)</a></p>
+      <p><a href="/guilds/category/">Category Selection(Coming in v0.7)</a></p>
+      <p><a href="/leagues">Server Leagues</a></p>
+      <p>Something going wrong? View the <a href="/status">Status</> page</a></p>
         <style type="text/css">
         .tg  {border-collapse:collapse;border-spacing:0;}
         .tg td{font-family:Roboto, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;}
         .tg th{font-family:Roboto, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;}
         .tg .tg-baqh{text-align:center;vertical-align:top}
+        .tg .tg-baq{text-align:center;padding:3px 5px;vertical-align:top}
         </style>
         <h3>Top Servers</h3>
         <table class="tg">
